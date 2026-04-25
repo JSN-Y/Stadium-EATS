@@ -3,34 +3,946 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Stadium Eats API — in-stadium food ordering for FIFA World Cup Morocco 2030
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: session
+  - name: stadiums
+  - name: stands
+  - name: menu
+  - name: orders
+  - name: rider
+  - name: admin
+  - name: feed
+  - name: match
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
-          description: Healthy
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  /session/scan:
+    post:
+      operationId: scanTicket
+      tags: [session]
+      summary: Validate a stadium ticket QR and create a fan session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ScanTicketBody" }
+      responses:
+        "200":
+          description: Valid ticket
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FanSession" }
+        "400":
+          description: Invalid ticket
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /session/{sessionId}:
+    get:
+      operationId: getSession
+      tags: [session]
+      summary: Get a fan session by id
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FanSession" }
+
+  /stadiums:
+    get:
+      operationId: listStadiums
+      tags: [stadiums]
+      summary: List all stadiums
+      responses:
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/Stadium" }
+
+  /stadiums/{stadiumId}:
+    get:
+      operationId: getStadium
+      tags: [stadiums]
+      summary: Get a stadium with its sections
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stadium" }
+
+  /stadiums/{stadiumId}/stands:
+    get:
+      operationId: listStands
+      tags: [stands]
+      summary: List stands in a stadium with live wait times
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: category
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Stand" }
+
+  /stadiums/{stadiumId}/trending:
+    get:
+      operationId: getTrendingItems
+      tags: [feed]
+      summary: Trending items in a stadium right now
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: section
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TrendingItem" }
+
+  /stadiums/{stadiumId}/feed:
+    get:
+      operationId: getStadiumFeed
+      tags: [feed]
+      summary: Live "fans near you are ordering" feed for a stadium
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FeedEvent" }
+
+  /stadiums/{stadiumId}/match:
+    get:
+      operationId: getLiveMatch
+      tags: [match]
+      summary: Live match ticker for a stadium
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LiveMatch" }
+
+  /stands/{standId}:
+    get:
+      operationId: getStand
+      tags: [stands]
+      summary: Get a single stand
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stand" }
+
+  /stands/{standId}/menu:
+    get:
+      operationId: getStandMenu
+      tags: [menu]
+      summary: Get a stand's menu
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MenuItem" }
+
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a new order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateOrderBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "400":
+          description: Validation or capacity error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /orders/session/{sessionId}:
+    get:
+      operationId: listSessionOrders
+      tags: [orders]
+      summary: List orders for a fan session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+
+  /orders/{orderId}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get an order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  /orders/{orderId}/rate:
+    post:
+      operationId: rateOrder
+      tags: [orders]
+      summary: Rate a delivered order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RateOrderBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  /rider/login:
+    post:
+      operationId: riderLogin
+      tags: [rider]
+      summary: Rider PIN login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RiderLoginBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Rider" }
+        "401":
+          description: Invalid PIN
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /rider/{riderId}/orders:
+    get:
+      operationId: getRiderOrders
+      tags: [rider]
+      summary: Orders assigned to a rider
+      parameters:
+        - name: riderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+
+  /rider/{riderId}/stats:
+    get:
+      operationId: getRiderStats
+      tags: [rider]
+      summary: A rider's day-of stats (deliveries, avg time)
+      parameters:
+        - name: riderId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RiderStats" }
+
+  /orders/{orderId}/status:
+    post:
+      operationId: updateOrderStatus
+      tags: [orders]
+      summary: Update an order's status
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateOrderStatusBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminLoginBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Admin" }
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /admin/{stadiumId}/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Admin KPIs and live overview for a stadium
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminDashboard" }
+
+  /admin/{stadiumId}/orders:
+    get:
+      operationId: getAdminOrders
+      tags: [admin]
+      summary: Live order queue for the stadium
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: status
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+
+  /admin/{stadiumId}/riders:
+    get:
+      operationId: getAdminRiders
+      tags: [admin]
+      summary: All riders for the stadium with status
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Rider" }
+
+  /admin/stands/{standId}/status:
+    post:
+      operationId: updateStandStatus
+      tags: [admin]
+      summary: Update stand status (open/temp_closed/closed)
+      parameters:
+        - name: standId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateStandStatusBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Stand" }
+
+  /admin/orders/{orderId}/assign:
+    post:
+      operationId: assignOrderRider
+      tags: [admin]
+      summary: Assign or reassign a rider to an order
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AssignRiderBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  /admin/{stadiumId}/broadcast:
+    post:
+      operationId: broadcastNotification
+      tags: [admin]
+      summary: Broadcast a notification to fans in a stadium section
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BroadcastBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationLog" }
+
+  /admin/{stadiumId}/broadcasts:
+    get:
+      operationId: listBroadcasts
+      tags: [admin]
+      summary: Recent broadcasts for the stadium
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/NotificationLog" }
+
+  /admin/{stadiumId}/heatmap:
+    get:
+      operationId: getOrderHeatmap
+      tags: [admin]
+      summary: Heatmap of orders by stadium section
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/HeatmapCell" }
+
+  /admin/{stadiumId}/halftime:
+    post:
+      operationId: triggerHalftimeMode
+      tags: [admin]
+      summary: Trigger or end "Half-Time Rush" mode with a featured item
+      parameters:
+        - name: stadiumId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/HalftimeBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HalftimePromo" }
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
+        status: { type: string }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { type: string }
+        code: { type: string }
+
+    SeatInfo:
+      type: object
+      required: [stadiumId, section, row, seat]
+      properties:
+        stadiumId: { type: string }
+        section: { type: string }
+        row: { type: string }
+        seat: { type: string }
+
+    ScanTicketBody:
+      type: object
+      required: [qrCode]
+      properties:
+        qrCode: { type: string }
+
+    FanSession:
+      type: object
+      required: [id, stadiumId, stadiumName, section, row, seat, fanName, goalPoints, ordersCount, createdAt]
+      properties:
+        id: { type: string }
+        stadiumId: { type: string }
+        stadiumName: { type: string }
+        section: { type: string }
+        row: { type: string }
+        seat: { type: string }
+        fanName: { type: string }
+        goalPoints: { type: integer }
+        ordersCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+
+    Stadium:
+      type: object
+      required: [id, name, city, sections, active]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string }
+        active: { type: boolean }
+        sections:
+          type: array
+          items: { type: string }
+
+    StandStatus:
+      type: string
+      enum: [open, busy, temp_closed, closed]
+
+    Stand:
+      type: object
+      required: [id, stadiumId, name, category, status, avgPrepTimeMinutes, pendingOrders, maxPendingOrders, waitTimeMinutes, imageUrl, rating]
+      properties:
+        id: { type: string }
+        stadiumId: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        status: { $ref: "#/components/schemas/StandStatus" }
+        avgPrepTimeMinutes: { type: integer }
+        pendingOrders: { type: integer }
+        maxPendingOrders: { type: integer }
+        waitTimeMinutes: { type: integer }
+        imageUrl: { type: string }
+        rating: { type: number }
+        location: { type: string }
+        reopenAt: { type: string, format: date-time }
+        isHalalOnly: { type: boolean }
+
+    MenuItem:
+      type: object
+      required: [id, standId, name, description, priceMad, category, allergens, isHalal, isAvailable, imageUrl]
+      properties:
+        id: { type: string }
+        standId: { type: string }
+        name: { type: string }
+        description: { type: string }
+        priceMad: { type: number }
+        category: { type: string }
+        allergens:
+          type: array
+          items: { type: string }
+        isHalal: { type: boolean }
+        isAvailable: { type: boolean }
+        imageUrl: { type: string }
+        isVegetarian: { type: boolean }
+        isFeatured: { type: boolean }
+
+    OrderItemInput:
+      type: object
+      required: [menuItemId, quantity]
+      properties:
+        menuItemId: { type: string }
+        quantity: { type: integer, minimum: 1 }
+
+    OrderItem:
+      type: object
+      required: [menuItemId, name, quantity, priceMad]
+      properties:
+        menuItemId: { type: string }
+        name: { type: string }
+        quantity: { type: integer }
+        priceMad: { type: number }
+        imageUrl: { type: string }
+
+    OrderStatus:
+      type: string
+      enum: [received, preparing, on_the_way, delivered, cancelled]
+
+    Order:
+      type: object
+      required: [id, sessionId, standId, standName, items, status, seat, subtotalMad, deliveryFeeMad, totalMad, etaMinutes, createdAt, isPreOrder]
+      properties:
+        id: { type: string }
+        sessionId: { type: string }
+        standId: { type: string }
+        standName: { type: string }
+        riderId: { type: string }
+        riderName: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+        status: { $ref: "#/components/schemas/OrderStatus" }
+        seat: { $ref: "#/components/schemas/SeatInfo" }
+        subtotalMad: { type: number }
+        deliveryFeeMad: { type: number }
+        totalMad: { type: number }
+        etaMinutes: { type: integer }
+        createdAt: { type: string, format: date-time }
+        scheduledFor: { type: string, format: date-time }
+        deliveredAt: { type: string, format: date-time }
+        rating: { type: integer }
+        isPreOrder: { type: boolean }
+        fanName: { type: string }
+
+    CreateOrderBody:
+      type: object
+      required: [sessionId, standId, items]
+      properties:
+        sessionId: { type: string }
+        standId: { type: string }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItemInput" }
+        scheduledFor: { type: string, format: date-time }
+        paymentMethod:
+          type: string
+          enum: [card, apple_pay, google_pay]
+
+    UpdateOrderStatusBody:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/OrderStatus" }
+        riderId: { type: string }
+
+    RateOrderBody:
+      type: object
+      required: [rating]
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+
+    Rider:
+      type: object
+      required: [id, name, stadiumId, status, activeOrders]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        stadiumId: { type: string }
         status:
           type: string
-      required:
-        - status
+          enum: [available, busy, offline]
+        activeOrders: { type: integer }
+        avatarUrl: { type: string }
 
+    RiderLoginBody:
+      type: object
+      required: [pin]
+      properties:
+        pin: { type: string }
+
+    RiderStats:
+      type: object
+      required: [riderId, deliveredToday, activeOrders, avgDeliveryMinutes]
+      properties:
+        riderId: { type: string }
+        deliveredToday: { type: integer }
+        activeOrders: { type: integer }
+        avgDeliveryMinutes: { type: number }
+
+    Admin:
+      type: object
+      required: [id, email, stadiumId, stadiumName]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        stadiumId: { type: string }
+        stadiumName: { type: string }
+
+    AdminLoginBody:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+
+    AdminDashboard:
+      type: object
+      required: [ordersToday, revenueTodayMad, activeRiders, avgDeliveryMinutes, ordersByHour, topItems, ordersByStand]
+      properties:
+        ordersToday: { type: integer }
+        revenueTodayMad: { type: number }
+        activeRiders: { type: integer }
+        avgDeliveryMinutes: { type: number }
+        ordersByHour:
+          type: array
+          items:
+            type: object
+            required: [hour, count]
+            properties:
+              hour: { type: string }
+              count: { type: integer }
+        topItems:
+          type: array
+          items:
+            type: object
+            required: [name, count, standName]
+            properties:
+              name: { type: string }
+              count: { type: integer }
+              standName: { type: string }
+        ordersByStand:
+          type: array
+          items:
+            type: object
+            required: [standName, count, revenueMad]
+            properties:
+              standName: { type: string }
+              count: { type: integer }
+              revenueMad: { type: number }
+
+    UpdateStandStatusBody:
+      type: object
+      required: [status]
+      properties:
+        status: { $ref: "#/components/schemas/StandStatus" }
+        reopenAt: { type: string, format: date-time }
+        maxPendingOrders: { type: integer }
+
+    AssignRiderBody:
+      type: object
+      required: [riderId]
+      properties:
+        riderId: { type: string }
+
+    BroadcastBody:
+      type: object
+      required: [message, section]
+      properties:
+        message: { type: string }
+        section: { type: string }
+        type:
+          type: string
+          enum: [promo, info, halftime]
+
+    NotificationLog:
+      type: object
+      required: [id, stadiumId, message, section, type, sentAt]
+      properties:
+        id: { type: string }
+        stadiumId: { type: string }
+        message: { type: string }
+        section: { type: string }
+        type: { type: string }
+        sentAt: { type: string, format: date-time }
+
+    HeatmapCell:
+      type: object
+      required: [section, count]
+      properties:
+        section: { type: string }
+        count: { type: integer }
+
+    HalftimeBody:
+      type: object
+      required: [active]
+      properties:
+        active: { type: boolean }
+        menuItemId: { type: string }
+        discountPercent: { type: integer }
+        message: { type: string }
+
+    HalftimePromo:
+      type: object
+      required: [stadiumId, active]
+      properties:
+        stadiumId: { type: string }
+        active: { type: boolean }
+        menuItemId: { type: string }
+        menuItemName: { type: string }
+        standName: { type: string }
+        imageUrl: { type: string }
+        discountPercent: { type: integer }
+        message: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    TrendingItem:
+      type: object
+      required: [menuItemId, name, standId, standName, ordersLastHour, imageUrl, priceMad]
+      properties:
+        menuItemId: { type: string }
+        name: { type: string }
+        standId: { type: string }
+        standName: { type: string }
+        ordersLastHour: { type: integer }
+        imageUrl: { type: string }
+        priceMad: { type: number }
+        section: { type: string }
+
+    FeedEvent:
+      type: object
+      required: [id, message, section, standName, itemName, createdAt]
+      properties:
+        id: { type: string }
+        message: { type: string }
+        section: { type: string }
+        standName: { type: string }
+        itemName: { type: string }
+        imageUrl: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    LiveMatch:
+      type: object
+      required: [stadiumId, homeTeam, awayTeam, homeScore, awayScore, minute, status]
+      properties:
+        stadiumId: { type: string }
+        homeTeam: { type: string }
+        awayTeam: { type: string }
+        homeFlag: { type: string }
+        awayFlag: { type: string }
+        homeScore: { type: integer }
+        awayScore: { type: integer }
+        minute: { type: integer }
+        status:
+          type: string
+          enum: [scheduled, first_half, halftime, second_half, full_time]
+        kickoffAt: { type: string, format: date-time }

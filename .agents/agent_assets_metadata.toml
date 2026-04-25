@@ -1,0 +1,50 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "muO7tuU2GKAVeKcSwLVBj"
+uri = "file://artifacts/stadium-eats/public/assets/logo.png"
+type = "image"
+title = "Stadium Eats logo"
+
+[[generated]]
+id = "LOb74dZGsdfn0cc3ZGKS8"
+uri = "file://artifacts/stadium-eats/public/assets/stands/moroccan.png"
+type = "image"
+title = "Moroccan Bites stand"
+
+[[generated]]
+id = "uZufxHTOsIUiIv6JnZ5HR"
+uri = "file://artifacts/stadium-eats/public/assets/stands/burgers.png"
+type = "image"
+title = "Goal Burgers stand"
+
+[[generated]]
+id = "7ooHCUmmg2KcIgRLK-DA5"
+uri = "file://artifacts/stadium-eats/public/assets/stands/pizza.png"
+type = "image"
+title = "Pizza Corner stand"
+
+[[generated]]
+id = "bzr2Gz4sxfwFiiyz9OPmS"
+uri = "file://artifacts/stadium-eats/public/assets/menu/tagine.png"
+type = "image"
+title = "Moroccan Tagine"
+
+[[generated]]
+id = "qk_yztPng2f53xsH2k-u3"
+uri = "file://artifacts/stadium-eats/public/assets/menu/kefta.png"
+type = "image"
+title = "Kefta Sandwich"
+
+[[generated]]
+id = "pwQUWrx09oHQwNI89IlfB"
+uri = "file://artifacts/stadium-eats/public/assets/menu/burger.png"
+type = "image"
+title = "Smash Burger"
+
+[[generated]]
+id = "in_Sx9yDj5kzPKuwWuWJn"
+uri = "file://artifacts/stadium-eats/public/assets/menu/mint-tea.png"
+type = "image"
+title = "Mint Tea"

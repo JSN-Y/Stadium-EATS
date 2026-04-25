@@ -1,0 +1,199 @@
+
+# Project: Stadium Eats — FIFA World Cup Morocco 2030
+## Full-Stack PWA Food Delivery Platform for Stadium Marketplaces
+
+---
+
+## OVERVIEW
+
+Build a **Progressive Web App (PWA)** called **"Stadium Eats"** — a real-time food ordering and delivery platform designed exclusively for use **inside FIFA World Cup 2030 stadiums in Morocco**. The app serves three types of users: **fans** ordering food, **delivery riders** fulfilling orders, and **admins** managing the entire operation per stadium.
+
+The app must feel polished, fast, and World Cup-ready. Think of it as the intersection of Uber Eats and a stadium experience — infused with Moroccan culture and FIFA branding energy.
+
+---
+
+## TECH STACK (Preferred)
+
+- **Frontend**: React + Vite (PWA-ready via vite-plugin-pwa)
+- **Backend**: Node.js + Express (or Supabase for BaaS)
+- **Database**: Supabase (PostgreSQL) or Firebase Firestore for real-time sync
+- **Auth**: Supabase Auth or Firebase Auth
+- **Real-time**: Supabase Realtime channels or Firebase onSnapshot
+- **Push Notifications**: Firebase Cloud Messaging (FCM) or Web Push API
+- **QR Scanning**: html5-qrcode library
+- **i18n**: react-i18next (languages: Arabic 🇲🇦, French, English, Spanish)
+- **Styling**: Tailwind CSS with a custom Morocco-inspired theme
+- **Maps/Location**: Leaflet.js or Google Maps JS SDK (for stadium zone visualization)
+
+---
+
+## DESIGN SYSTEM & UI PHILOSOPHY
+
+> This app will be judged. Make it visually exceptional.
+
+- **Theme**: Morocco World Cup 2030 — rich green (#1A6B3A), bold red (#C1272D), warm gold (#D4A843), clean white. Use Moroccan geometric patterns (zellige-inspired) as subtle background textures on hero sections.
+- **Typography**: Use a modern, legible sans-serif. Bold headings, clean labels.
+- **Dark mode**: Supported, with a deep navy/charcoal base.
+- **Mobile-first**: All interfaces are designed for smartphones (360px–430px wide). Desktop is a bonus.
+- **Animations**: Smooth page transitions, skeleton loaders while fetching data, animated order status progress bars.
+- **Language Toggle**: Visible in the top navbar at all times. RTL layout support for Arabic.
+- **Accessibility**: WCAG AA compliant. Large tap targets (min 44px), sufficient contrast.
+
+---
+
+## USER ROLES & FLOWS
+
+### ROLE 1 — FAN (Customer)
+
+#### App Startup & Ticket Scanning
+- On first launch, show a beautiful **World Cup-branded splash screen** with animated logo and tagline: *"Your stadium. Your meal. Delivered."*
+- Prompt the user to **scan their match ticket QR code** using the device camera.
+- Parse the QR code to extract: **Stadium ID, Section, Row, Seat number**.
+- **Validate location**: If the scanned QR does not correspond to a valid stadium in the system, show a friendly error: *"Oops! This app is only available inside official FIFA World Cup 2030 venues."* — and block access.
+- On valid scan, store the fan's location (Stadium + Section + Seat) for the entire session.
+- Show a welcome screen: *"Welcome to [Stadium Name]! You're in Section [X], Seat [Y]."* with a mini stadium zone map highlighting their location.
+
+#### Home / Marketplace Screen
+- Display all food stands for that stadium in a **card grid** (stand name, category, thumbnail, current wait time, open/closed badge).
+- **Status badges**: green = Open, yellow = Busy (high load), red = Temporarily Closed, gray = Closed.
+- **Filter bar** at top: filter by category (Burgers, Pizza, Moroccan Food, Drinks, Snacks, Desserts, Vegetarian, Halal-only), and sort by (Wait Time, Rating, Popularity).
+- **Smart recommendation strip**: a horizontal scroll section titled *"Trending near you"* showing top-ordered items in the fan's stadium section at that moment.
+- **"Fans near you are ordering this"** notification banners that appear periodically with item name, stand, and an order CTA.
+- Display a **live match ticker** at the very top (score, minute, teams) to set the stadium atmosphere.
+
+#### Stand & Menu Page
+- Click into any open stand to see its full menu.
+- Items displayed as cards: photo, name, description, price (MAD), allergens icons (gluten, nuts, dairy, etc.), halal badge.
+- **Average wait time** shown prominently (e.g., "~8 min wait").
+- Add items to cart with quantity selector. Cart persists across stands (multi-stand order support).
+
+#### Cart & Checkout
+- Cart shows itemized list, subtotal, delivery fee (flat or free), estimated delivery time.
+- **Delivery location**: auto-filled from ticket scan (Stadium, Section, Seat). Fan can review but not change it freely — it must be within the scanned stadium.
+- **Pre-order toggle**: a toggle labeled *"Schedule for later"* — when enabled, show a time picker (15-min intervals) so fans can choose when they want their food delivered (e.g., 30 min before half-time).
+- **Payment**: Simulate payment with a mock payment screen (cards, Apple Pay UI mock, Google Pay UI mock).
+- On order confirmation: show animated checkmark + order ID + estimated delivery time.
+
+#### Order Tracking
+- Dedicated **"My Orders"** screen with real-time status updates.
+- Each order shows a **4-step progress bar**: Order Received → Being Prepared → On the Way → Delivered.
+- Live estimated minutes remaining per step.
+- Push notification on each status change: *"Your Chicken Wrap is being prepared!"*, *"Your rider Ahmed is on the way!"*.
+- Order history tab for past orders in the same session.
+
+#### Loyalty & Gamification
+- **Fan Score**: each order earns "Goal Points". Display a small badge in the profile section.
+- After delivery, prompt a quick rating (1–5 stars) for the stand.
+- If a fan orders 3+ times, unlock a **"Stadium Regular"** badge shown on their profile.
+
+---
+
+### ROLE 2 — DELIVERY RIDER
+
+**Access**: Separate login via a **private URL route** (`/rider`) or PIN-based login.
+
+#### Rider Dashboard
+- Shows all orders **assigned to this rider**, sorted by pickup stand → delivery section.
+- Each order card: Order ID, items summary, pickup stand name & location in stadium, delivery destination (Section + Row + Seat), fan name.
+- **Status buttons**: Mark as "Picked Up" → "En Route" → "Delivered". Each tap updates the database in real-time and triggers fan notifications.
+- **Batch view**: If multiple orders go to the same stadium section, group them and suggest a single trip.
+- Simple stadium **zone mini-map** showing rider's current delivery cluster.
+
+---
+
+### ROLE 3 — ADMIN
+
+**Access**: Separate login via `/admin` route with email + password.
+
+#### Admin Dashboard Overview
+- Real-time KPIs: Total orders today, Revenue today, Active riders, Average delivery time, Orders per stand.
+- Graphs: Hourly order volume, top-selling items of the day.
+
+#### Stand Management
+- List of all stands in the stadium.
+- For each stand, admin can toggle status:
+  - **Open** — accepting orders normally
+  - **Temporarily Closed** — paused (e.g., restocking). Shows an estimated reopen time field.
+  - **Closed** — done for the day.
+- Set a **maximum pending orders limit** per stand (default: 50). When a stand hits its limit, new orders for that stand are automatically blocked with a user-facing message: *"This stand is at full capacity right now. Try again in a few minutes!"*
+- Edit stand details: name, menu items, prices, availability.
+
+#### Order Management
+- Full live order queue with filters (all / by stand / by status / by rider).
+- Manually reassign orders to different riders.
+- Force-update any order's status.
+- Cancel orders with reason logging.
+
+#### Rider Management
+- List of active riders with status (available / busy / offline).
+- Assign or unassign riders to stands or zones.
+
+#### Notifications Panel
+- Broadcast a push notification to all fans in a specific stadium section (e.g., *"Half-time special: 20% off all drinks for the next 15 minutes!"*).
+
+#### Analytics
+- Export daily order log as CSV.
+- Heatmap of which stadium sections order the most.
+
+---
+
+## SMART FEATURES DETAILS
+
+### Real-Time Wait Time Engine
+- Each stand has a queue. Wait time = (number of pending orders × average prep time per item).
+- Display updates every 30 seconds on the home screen without page refresh.
+
+### Smart Recommendation System
+- Track most ordered items globally per stadium per hour.
+- Show section-level trending items: *"Fans in Section C are loving the Kefta Sandwich right now."*
+- For returning users (same session), recommend based on past orders.
+
+### Pre-Order System
+- Fans can place an order up to 90 minutes in advance.
+- The kitchen system receives the order at the correct prep start time (accounting for avg prep duration).
+- Pre-orders are flagged distinctly in the admin/rider views.
+
+### Location Validation (Anti-fraud)
+- On ticket scan, validate the QR against an internal database of valid stadium QR formats.
+- If the device's GPS (optional, with permission) is available, cross-check that coordinates are within the stadium geofence polygon (configurable per stadium in admin).
+- Gracefully degrade if GPS is unavailable — rely on QR validation only.
+
+### Multi-Language (i18n)
+- Languages: English, French, Arabic (RTL), Spanish.
+- All UI strings, notifications, and error messages must be translated.
+- Language auto-detected from browser preference, manually switchable in navbar.
+- For Arabic: full RTL layout flip (text alignment, flex direction, icon placement).
+
+---
+
+## DATABASE SCHEMA (Suggested)
+
+Tables/Collections:
+- **stadiums**: id, name, city, geofence_polygon, active
+- **stands**: id, stadium_id, name, category, status (open/temp_closed/closed), max_pending_orders, avg_prep_time, image_url
+- **menu_items**: id, stand_id, name, description, price_mad, category, allergens[], is_halal, image_url, is_available
+- **orders**: id, fan_session_id, stand_id, rider_id, seat_info (stadium, section, row, seat), items[], status, scheduled_time, created_at, delivered_at
+- **riders**: id, name, stadium_id, status, current_orders[]
+- **admins**: id, stadium_id, email
+- **notifications_log**: id, type, target_section, message, sent_at
+
+---
+
+## DEMO DATA TO SEED
+
+- 2 stadiums: "Grand Stade Hassan II – Casablanca" and "Stade de Marrakech"
+- 5 stands per stadium: "Moroccan Bites" (tagines, kefta), "Goal Burgers" (smash burgers), "Café Mint" (drinks, pastries), "Pizza Corner" (pizza slices), "Snack Zone" (fries, nuggets)
+- 10 menu items per stand with realistic Moroccan pricing (35–120 MAD)
+- 3 demo rider accounts, 1 admin account
+- Pre-seeded sample orders in various statuses to demonstrate the live order flow on demo day
+
+---
+
+## EXTRA POLISH (for judges)
+
+- **Onboarding tutorial**: A 3-step swipe card on first launch explaining how the app works.
+- **PWA install prompt**: Encourage users to "Add to Home Screen" with a custom banner.
+- **Confetti animation** when an order is delivered.
+- **Half-time mode**: Admin can trigger a "Half-Time Rush" mode that highlights a featured item with a promotional banner across all fans in the stadium.
+- **Offline mode**: If connection drops inside the stadium (crowded network), show cached menu and a friendly offline banner. Orders queue locally and sync when back online.
+- **Accessibility**: Screen reader labels, keyboard navigable admin panel.
