@@ -46165,7 +46165,7 @@ app.use("/api", routes_default);
 var frontendDist = path.resolve(__dirname2, "../frontend-dist");
 if (fs.existsSync(frontendDist)) {
   app.use(import_express9.default.static(frontendDist));
-  app.get("(.*)", (_req, res) => {
+  app.get(/.*/, (_req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
   });
 }
