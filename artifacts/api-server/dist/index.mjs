@@ -46162,7 +46162,7 @@ app.use((0, import_cors.default)());
 app.use(import_express9.default.json());
 app.use(import_express9.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
-var frontendDist = path.resolve(__dirname2, "../../stadium-eats/dist/public");
+var frontendDist = path.resolve(__dirname2, "../frontend-dist");
 if (fs.existsSync(frontendDist)) {
   app.use(import_express9.default.static(frontendDist));
   app.get("*", (_req, res) => {

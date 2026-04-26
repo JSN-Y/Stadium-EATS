@@ -34,7 +34,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
-const frontendDist = path.resolve(__dirname, "../../stadium-eats/dist/public");
+const frontendDist = path.resolve(__dirname, "../frontend-dist");
 if (fs.existsSync(frontendDist)) {
   app.use(express.static(frontendDist));
   app.get("*", (_req, res) => {
