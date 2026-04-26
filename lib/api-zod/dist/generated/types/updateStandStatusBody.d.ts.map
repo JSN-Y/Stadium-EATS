@@ -1,0 +1,1 @@
+{"version":3,"file":"updateStandStatusBody.d.ts","sourceRoot":"","sources":["../../../src/generated/types/updateStandStatusBody.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,WAAW,EAAE,MAAM,eAAe,CAAC;AAEjD,MAAM,WAAW,qBAAqB;IACpC,MAAM,EAAE,WAAW,CAAC;IACpB,QAAQ,CAAC,EAAE,IAAI,CAAC;IAChB,gBAAgB,CAAC,EAAE,MAAM,CAAC;CAC3B"}
