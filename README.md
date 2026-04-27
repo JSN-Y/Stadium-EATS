@@ -4,10 +4,6 @@
 
 Built for **Info Days Hackathon v2** (2030 World Cup Morocco theme)
 
-![Stade Souk Demo](<img width="240" height="240" alt="logo" src="https://github.com/user-attachments/assets/e5a764a7-5862-427f-9c61-1fc4d27fe6ca" />)
-
-*Add a screenshot of your app here*
-
 ## 🎯 The Problem
 
 Stadium fans face long concession lines, missing crucial game moments just to grab food or drinks. Current solutions force fans to choose between enjoying the game and staying fed.
